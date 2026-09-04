@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Segoe UI", "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-navy-900 antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.container-px {
+  @apply px-6 md:px-10 lg:px-16;
+}
+
+.section-y {
+  @apply py-16 md:py-24;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-sm md:text-base transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-skyblue-500;
+}
+
+.btn-primary {
+  @apply btn bg-navy-800 text-white shadow-premium hover:bg-navy-700 active:scale-[0.98];
+}
+
+.btn-accent {
+  @apply btn bg-diadem-red text-white shadow-premium hover:brightness-110 active:scale-[0.98];
+}
+
+.btn-outline {
+  @apply btn border-2 border-navy-800 text-navy-800 hover:bg-navy-800 hover:text-white active:scale-[0.98];
+}
+
+.btn-whatsapp {
+  @apply btn bg-[#25D366] text-white shadow-premium hover:brightness-105 active:scale-[0.98];
+}
+
+.eyebrow {
+  @apply inline-block text-xs md:text-sm font-bold tracking-[0.2em] uppercase text-skyblue-600;
+}
