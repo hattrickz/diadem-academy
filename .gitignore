@@ -2,4 +2,7 @@ node_modules
 .next
 out
 .env*
+!.env.local.example
 *.log
+supabase/.temp
+tsconfig.tsbuildinfo

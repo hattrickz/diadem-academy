@@ -70,6 +70,8 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+        {/* Spacer so the fixed mobile contact bar never overlaps footer content */}
+        <div className="h-16 md:hidden" aria-hidden="true" />
         <StickyContactBar />
       </body>
     </html>
