@@ -21,6 +21,12 @@ export interface Profile {
 }
 
 export interface Database {
+  // Required by @supabase/supabase-js v2's newer generic type resolution.
+  // This is a type-only marker (no runtime meaning) — '12' matches the
+  // PostgREST version this client version expects by default.
+  __InternalSupabase: {
+    PostgrestVersion: "12";
+  };
   public: {
     Tables: {
       profiles: {
@@ -30,10 +36,22 @@ export interface Database {
         // `role` is intentionally excluded from client-side Update — role
         // changes are blocked by the prevent_role_self_update trigger and
         // must go through server-side code using the service-role key.
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
     Enums: {
       user_role: UserRole;
     };
+    CompositeTypes: Record<string, never>;
   };
 }

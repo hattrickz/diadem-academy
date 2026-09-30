@@ -1,15 +1,28 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { Database, UserRole } from "@/lib/supabase/database.types";
 
 // Refreshes the Supabase auth session cookie on every request so server
-// components always see an up-to-date session. This does NOT gate access
-// to any route in Phase 2 — no /student, /tutor or /admin routes exist yet,
-// so this middleware is currently a no-op in terms of blocking anything.
-// It only keeps the session cookie fresh for when those routes are added.
+// components always see an up-to-date session, AND gates access to the
+// role-specific dashboards added in Phase 3 (/student, /tutor, /admin).
+//
+// This is defense-in-depth alongside the authorization check each
+// dashboard page performs itself in getUserWithProfile() — neither one
+// alone is assumed sufficient; both check the real Supabase session/role,
+// never anything supplied by the browser.
 //
 // If either Supabase env var is missing (e.g. this repo hasn't been wired
 // to a project yet), the middleware safely no-ops instead of breaking the
-// public website.
+// public website — this was verified with the production build running
+// and no Supabase env vars set.
+const PROTECTED_PREFIXES = ["/student", "/tutor", "/admin"] as const;
+
+function roleHome(role: UserRole | undefined): string {
+  if (role === "tutor") return "/tutor";
+  if (role === "admin") return "/admin";
+  return "/student";
+}
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -20,7 +33,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
         return request.cookies.get(name)?.value;
@@ -36,7 +49,37 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const matchedPrefix = PROTECTED_PREFIXES.find(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  if (matchedPrefix) {
+    if (!user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Role comes from the database via the authenticated session — never
+    // from a query param, cookie value, or anything else the client sent.
+    // NOTE: .single<{ role: UserRole }>() — see the matching note in
+    // lib/auth/actions.ts for why this explicit generic is required.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single<{ role: UserRole }>();
+
+    const home = roleHome(profile?.role);
+    if (`/${matchedPrefix.slice(1)}` !== home) {
+      return NextResponse.redirect(new URL(home, request.url));
+    }
+  }
 
   return response;
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Phone, MessageCircle } from "lucide-react";
+import { Menu, X, Phone, MessageCircle, LogIn } from "lucide-react";
 import { siteConfig, telHref, whatsappHref } from "@/lib/site-config";
 
 export default function Header() {
@@ -45,6 +45,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <Link href="/login" className="btn-outline !px-4 !py-2.5 text-sm">
+            <LogIn size={16} /> Log In
+          </Link>
           <a href={telHref(siteConfig.contact.phones[0])} className="btn-outline !px-4 !py-2.5 text-sm">
             <Phone size={16} /> Call Us
           </a>
@@ -84,6 +87,9 @@ export default function Header() {
                 </Link>
               ))}
               <div className="mt-3 flex flex-col gap-2">
+                <Link href="/login" onClick={() => setOpen(false)} className="btn-outline w-full">
+                  <LogIn size={18} /> Log In
+                </Link>
                 <a href={telHref(siteConfig.contact.phones[0])} className="btn-outline w-full">
                   <Phone size={18} /> Call {siteConfig.contact.phones[0]}
                 </a>
