@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 import LoginForm from "@/components/auth/LoginForm";
+import FormMessage from "@/components/auth/FormMessage";
 
 export const metadata: Metadata = {
   title: "Log In",
   robots: { index: false, follow: false },
 };
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { reset?: string };
+}) {
   return (
     <AuthCard
       title="Welcome Back"
@@ -22,6 +27,11 @@ export default function LoginPage() {
         </>
       }
     >
+      {searchParams.reset === "success" && (
+        <div className="mb-5">
+          <FormMessage success="Your password has been updated. You can now log in." />
+        </div>
+      )}
       <LoginForm />
     </AuthCard>
   );

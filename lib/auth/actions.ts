@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import type { AuthError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getRequestOrigin } from "@/lib/get-origin";
 import { isValidEmail, passwordIssue } from "@/lib/validation";
@@ -58,9 +59,7 @@ export async function signupAction(
       emailRedirectTo: `${origin}/login`,
     },
   });
-
   if (error) {
-    // Don't leak internal Supabase/Postgres error details to the client.
     const message = /already registered|already exists/i.test(error.message)
       ? "An account with this email already exists. Try logging in instead."
       : "We couldn't create your account. Please try again.";
@@ -191,6 +190,19 @@ export async function forgotPasswordAction(
   };
 }
 
+// TEMPORARY DIAGNOSTIC — server-side logging only. Remove once the
+// password-reset failure has been identified. Logs only non-sensitive error
+// metadata (never the password, tokens, or cookies) and is never returned to
+// the browser.
+function logAuthDiagnostic(label: string, error: AuthError) {
+  console.error(label, {
+    name: error.name,
+    message: error.message,
+    status: error.status,
+    code: error.code,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // UPDATE PASSWORD (completes the forgot-password flow)
 // ---------------------------------------------------------------------------
@@ -220,7 +232,12 @@ export async function updatePasswordAction(
 
   const {
     data: { user },
+    error: getUserError,
   } = await supabase.auth.getUser();
+
+  if (getUserError) {
+    logAuthDiagnostic("GET USER ERROR:", getUserError);
+  }
 
   if (!user) {
     return {
@@ -230,6 +247,7 @@ export async function updatePasswordAction(
 
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
+    logAuthDiagnostic("UPDATE PASSWORD ERROR:", error);
     return {
       error:
         "We couldn't update your password. Please request a new reset link and try again.",
@@ -241,5 +259,11 @@ export async function updatePasswordAction(
   // that started as a password-recovery flow.
   await supabase.auth.signOut();
 
-  return { success: "Your password has been updated. You can now log in." };
+  // Reaching this line means updateUser() actually succeeded. signOut()
+  // just deleted the auth cookies, which makes Next re-render the current
+  // route on the server; /reset-password would then see "no user" and
+  // replace the form (and any success state) with its invalid-link block.
+  // So navigate away instead of returning state to a page that is about to
+  // be re-rendered. The destination is a fixed literal, not user input.
+  redirect("/login?reset=success");
 }
