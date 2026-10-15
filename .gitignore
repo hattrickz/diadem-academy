@@ -6,3 +6,4 @@ out
 *.log
 supabase/.temp
 tsconfig.tsbuildinfo
+.DS_Store

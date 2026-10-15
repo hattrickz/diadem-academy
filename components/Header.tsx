@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Phone, MessageCircle, LogIn } from "lucide-react";
-import { siteConfig, telHref, whatsappHref } from "@/lib/site-config";
+import { Menu, X, LogIn } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -48,12 +48,7 @@ export default function Header() {
           <Link href="/login" className="btn-outline !px-4 !py-2.5 text-sm">
             <LogIn size={16} /> Log In
           </Link>
-          <a href={telHref(siteConfig.contact.phones[0])} className="btn-outline !px-4 !py-2.5 text-sm">
-            <Phone size={16} /> Call Us
-          </a>
-          <a href={whatsappHref("Hello Diadem Consult Academy, I'd like to enquire about your programs.")} className="btn-whatsapp !px-4 !py-2.5 text-sm">
-            <MessageCircle size={16} /> WhatsApp
-          </a>
+
         </div>
 
         <button
@@ -90,15 +85,7 @@ export default function Header() {
                 <Link href="/login" onClick={() => setOpen(false)} className="btn-outline w-full">
                   <LogIn size={18} /> Log In
                 </Link>
-                <a href={telHref(siteConfig.contact.phones[0])} className="btn-outline w-full">
-                  <Phone size={18} /> Call {siteConfig.contact.phones[0]}
-                </a>
-                <a
-                  href={whatsappHref("Hello Diadem Consult Academy, I'd like to enquire about your programs.")}
-                  className="btn-whatsapp w-full"
-                >
-                  <MessageCircle size={18} /> Chat on WhatsApp
-                </a>
+
               </div>
             </nav>
           </motion.div>

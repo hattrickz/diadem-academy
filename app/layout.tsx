@@ -3,7 +3,7 @@ import "./globals.css";
 import { siteConfig } from "@/lib/site-config";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import StickyContactBar from "@/components/StickyContactBar";
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -70,9 +70,6 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
-        {/* Spacer so the fixed mobile contact bar never overlaps footer content */}
-        <div className="h-16 md:hidden" aria-hidden="true" />
-        <StickyContactBar />
       </body>
     </html>
   );
