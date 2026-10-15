@@ -40,8 +40,8 @@ export type ParsedCourse =
 
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // Control characters other than tab / newline / carriage return.
-const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
-const LINE_BREAKS = /[\r\n]/;
+export const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+export const LINE_BREAKS = /[\r\n]/;
 
 /** The text of a form field; a missing field or a File becomes "". */
 export function readText(formData: FormData, name: string): string {
@@ -50,8 +50,28 @@ export function readText(formData: FormData, name: string): string {
 }
 
 // The database counts characters (code points), not UTF-16 units.
-function length(value: string): number {
+export function charLength(value: string): number {
   return Array.from(value).length;
+}
+
+/**
+ * Optional https link shared by the course thumbnail and the lesson video / PDF
+ * fields. Blank -> { value: null }. Uses the project's safeHttpsUrl (https only,
+ * no embedded username/password) plus length / control-character checks.
+ */
+export function validateHttpsUrl(raw: string, label: string): { value: string | null; error?: string } {
+  if (!raw) return { value: null };
+  if (CONTROL_CHARS.test(raw) || /\s/.test(raw)) {
+    return { value: null, error: `${label} can't contain spaces or line breaks.` };
+  }
+  if (charLength(raw) > COURSE_LIMITS.url) {
+    return { value: null, error: `${label} must be ${COURSE_LIMITS.url} characters or fewer.` };
+  }
+  const safe = safeHttpsUrl(raw);
+  if (!safe || charLength(safe) > COURSE_LIMITS.url) {
+    return { value: null, error: `${label} must be a valid https:// link (no username or password in it).` };
+  }
+  return { value: safe };
 }
 
 /** "Intro to Maths & Logic!" -> "intro-to-maths-and-logic" */
@@ -82,7 +102,7 @@ export function parseCourseInput(formData: FormData): ParsedCourse {
     errors.title = "Title is required.";
   } else if (CONTROL_CHARS.test(raw.title) || LINE_BREAKS.test(raw.title)) {
     errors.title = "Title contains characters that aren't allowed.";
-  } else if (length(raw.title) > COURSE_LIMITS.title) {
+  } else if (charLength(raw.title) > COURSE_LIMITS.title) {
     errors.title = `Title must be ${COURSE_LIMITS.title} characters or fewer.`;
   }
 
@@ -95,7 +115,7 @@ export function parseCourseInput(formData: FormData): ParsedCourse {
     if (!slug && !errors.title) {
       errors.slug = "Enter a URL slug using letters and numbers (one couldn't be created from the title).";
     }
-  } else if (length(slug) > COURSE_LIMITS.slug) {
+  } else if (charLength(slug) > COURSE_LIMITS.slug) {
     errors.slug = `Slug must be ${COURSE_LIMITS.slug} characters or fewer.`;
   } else if (!SLUG_RE.test(slug)) {
     errors.slug = "Use lowercase letters, numbers and single hyphens only (for example: intro-to-maths).";
@@ -105,27 +125,15 @@ export function parseCourseInput(formData: FormData): ParsedCourse {
   if (raw.description) {
     if (CONTROL_CHARS.test(raw.description)) {
       errors.description = "Description contains characters that aren't allowed.";
-    } else if (length(raw.description) > COURSE_LIMITS.description) {
+    } else if (charLength(raw.description) > COURSE_LIMITS.description) {
       errors.description = `Description must be ${COURSE_LIMITS.description} characters or fewer.`;
     }
   }
 
   // thumbnail: optional https link, validated with the project's existing helper
-  let thumbnail: string | null = null;
-  if (raw.thumbnail_url) {
-    if (CONTROL_CHARS.test(raw.thumbnail_url) || /\s/.test(raw.thumbnail_url)) {
-      errors.thumbnail_url = "Thumbnail link can't contain spaces or line breaks.";
-    } else if (length(raw.thumbnail_url) > COURSE_LIMITS.url) {
-      errors.thumbnail_url = `Thumbnail link must be ${COURSE_LIMITS.url} characters or fewer.`;
-    } else {
-      const safe = safeHttpsUrl(raw.thumbnail_url);
-      if (!safe || length(safe) > COURSE_LIMITS.url) {
-        errors.thumbnail_url = "Thumbnail link must be a valid https:// link (no username or password in it).";
-      } else {
-        thumbnail = safe;
-      }
-    }
-  }
+  const thumb = validateHttpsUrl(raw.thumbnail_url, "Thumbnail link");
+  if (thumb.error) errors.thumbnail_url = thumb.error;
+  const thumbnail = thumb.value;
 
   if (Object.keys(errors).length > 0) {
     return { ok: false, fieldErrors: errors, values: raw };

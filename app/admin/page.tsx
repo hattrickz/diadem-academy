@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, FilePen, GraduationCap, Plus, type LucideIcon } from "lucide-react";
+import { BookOpen, CheckCircle2, FilePen, GraduationCap, Plus, Users, type LucideIcon } from "lucide-react";
 import { requireAdmin } from "@/lib/admin/guard";
 import { getDashboardStats } from "@/lib/admin/course-data";
 import { formatMemberSince, getFirstName } from "@/lib/profile-display";
@@ -49,14 +49,21 @@ export default async function AdminDashboardPage() {
           >
             Manage courses
           </Link>
+          <Link
+            href="/admin/enrollments"
+            className="btn-outline !border-white !text-white hover:!bg-white hover:!text-navy-800"
+          >
+            Manage enrollments
+          </Link>
         </div>
       </header>
 
-      <section aria-label="Statistics" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Statistics" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard icon={BookOpen} label="Courses" value={stats.courses} />
         <StatCard icon={CheckCircle2} label="Published" value={stats.published} />
         <StatCard icon={FilePen} label="Drafts" value={stats.drafts} />
         <StatCard icon={GraduationCap} label="Students" value={stats.students} />
+        <StatCard icon={Users} label="Enrollments" value={stats.enrollments} />
       </section>
 
       <section aria-labelledby="recent-heading" className="rounded-xl2 bg-white p-6 shadow-sm ring-1 ring-navy-100">

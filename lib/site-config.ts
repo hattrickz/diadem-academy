@@ -1,3 +1,4 @@
+
 // Central configuration for Diadem Consult Academy.
 // Update organization-wide details here — contact info, socials, hours —
 // so every component reads from a single source of truth.
@@ -5,7 +6,7 @@
 export const siteConfig = {
   name: "Diadem Consult Academy",
   shortName: "Diadem Consult",
-  tagline: "Quietly Brilliant",
+  tagline: "Training Leaders of Tomorrow.",
   domain: "diademconsult.com.ng",
   url: "https://diademconsult.com.ng",
 
@@ -38,11 +39,12 @@ export const siteConfig = {
   socials: [] as { label: string; href: string }[],
 
   nav: [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Programs", href: "/programs" },
-    { label: "Contact", href: "/contact" },
-  ],
+  { label: "Home", href: "/" },
+  { label: "Programmes", href: "/programs" },
+  { label: "Online Courses", href: "/courses" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+],
 };
 
 export function whatsappHref(message?: string) {

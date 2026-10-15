@@ -2,24 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { BookOpen, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
 
 // Client component only to mark the active link. It carries no data and makes
 // no access decision: middleware.ts, every page (requireAdmin) and every server
 // action (authorizeAdminAction) enforce access on the server.
-const ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/courses", label: "Courses", icon: BookOpen },
-];
+const ITEMS: Record<"admin" | "tutor", { href: string; label: string; icon: LucideIcon }[]> = {
+  admin: [
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/courses", label: "Courses", icon: BookOpen },
+    { href: "/admin/enrollments", label: "Enrollments", icon: Users },
+  ],
+  tutor: [
+    { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/tutor/courses", label: "Courses", icon: BookOpen },
+  ],
+};
 
-export default function AdminNav() {
+export default function AdminNav({ area = "admin" }: { area?: "admin" | "tutor" }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Admin">
+    <nav aria-label={area === "admin" ? "Admin" : "Tutor"}>
       <ul className="flex flex-wrap gap-2">
-        {ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+        {ITEMS[area].map(({ href, label, icon: Icon }) => {
+          const active = href === `/${area}` ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <li key={href}>
               <Link

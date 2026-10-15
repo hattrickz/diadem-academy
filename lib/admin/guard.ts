@@ -62,3 +62,29 @@ export async function authorizeAdminAction(): Promise<AdminAuth> {
   }
   return { ok: true, userId: user.id };
 }
+
+export type StaffAuth =
+  | { ok: true; userId: string; role: "admin" | "tutor"; base: "/admin" | "/tutor" }
+  | { ok: false; error: string };
+
+/**
+ * For actions that RLS already allows to BOTH tutors and admins (editing /
+ * publishing courses, managing lessons). Students, signed-out users and
+ * anyone else are refused. Admin-only actions keep using authorizeAdminAction().
+ */
+export async function authorizeStaffAction(): Promise<StaffAuth> {
+  const { user, profile } = await getUserWithProfile();
+
+  if (!user) {
+    return { ok: false, error: "Your session has expired. Please sign in again." };
+  }
+  if (!profile || (profile.role !== "admin" && profile.role !== "tutor")) {
+    return { ok: false, error: "You don't have permission to do that." };
+  }
+  return {
+    ok: true,
+    userId: user.id,
+    role: profile.role,
+    base: profile.role === "admin" ? "/admin" : "/tutor",
+  };
+}

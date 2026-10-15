@@ -1,71 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { useId } from "react";
 import { useFormState } from "react-dom";
 import FormMessage from "@/components/auth/FormMessage";
 import AdminSubmitButton from "@/components/admin/AdminSubmitButton";
-import { createCourseAction, updateCourseAction } from "@/lib/admin/course-actions";
+import { Field } from "@/components/admin/FormField";
+import {
+  createCourseAction,
+  updateCourseAction,
+  updateCourseAsTutorAction,
+} from "@/lib/admin/course-actions";
 import type { ActionState } from "@/lib/admin/course-validation";
 import type { Course } from "@/lib/supabase/database.types";
-
-const inputClass =
-  "w-full rounded-xl border bg-white px-4 py-3 text-sm text-navy-800 placeholder:text-navy-700/40 focus:outline-none focus:ring-2";
-const okBorder = "border-navy-100 focus:border-skyblue-500 focus:ring-skyblue-200";
-const badBorder = "border-diadem-red focus:border-diadem-red focus:ring-diadem-red/20";
-
-function Field({
-  name,
-  label,
-  error,
-  hint,
-  required,
-  children,
-}: {
-  name: string;
-  label: string;
-  error?: string;
-  hint?: string;
-  required?: boolean;
-  children: (props: { id: string; className: string; describedBy?: string }) => React.ReactNode;
-}) {
-  const id = useId();
-  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-navy-800">
-        {label}
-        {required && (
-          <>
-            <span aria-hidden="true" className="text-diadem-red"> *</span>
-            <span className="sr-only"> (required)</span>
-          </>
-        )}
-      </label>
-      {children({ id, className: `${inputClass} ${error ? badBorder : okBorder}`, describedBy })}
-      {hint && !error && (
-        <p id={`${id}-hint`} className="mt-1.5 text-xs text-navy-700/70">
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs font-semibold text-diadem-red">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
 
 // Create / edit form. All validation happens on the server
 // (lib/admin/course-validation.ts); the inputs carry no client-side rules that
 // could be mistaken for security.
-export default function CourseForm({ mode, course }: { mode: "create" | "edit"; course?: Course }) {
+export default function CourseForm({
+  mode,
+  course,
+  area = "admin",
+}: {
+  mode: "create" | "edit";
+  course?: Course;
+  /** Which area is rendering the form. Only picks the action + back link; each action re-checks the role on the server. */
+  area?: "admin" | "tutor";
+}) {
   const editing = mode === "edit" && course;
-  const [state, formAction] = useFormState<ActionState, FormData>(
-    editing ? updateCourseAction : createCourseAction,
-    {}
-  );
+  // Tutors only ever EDIT (create/delete are admin-only); their action is a
+  // separate, explicitly tutor-or-admin-authorized wrapper in course-actions.ts.
+  const action = editing ? (area === "tutor" ? updateCourseAsTutorAction : updateCourseAction) : createCourseAction;
+  const backHref = area === "tutor" ? "/tutor/courses" : "/admin/courses";
+  const [state, formAction] = useFormState<ActionState, FormData>(action, {});
   // After a rejected submit the server echoes what was typed, so nothing is lost.
   const value = (name: string, fallback: string) => state.values?.[name] ?? fallback;
   const published = state.values ? state.values.published === "on" : (course?.published ?? false);
@@ -175,7 +141,7 @@ export default function CourseForm({ mode, course }: { mode: "create" | "edit"; 
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <AdminSubmitButton>{editing ? "Save changes" : "Create course"}</AdminSubmitButton>
-        <Link href="/admin/courses" className="btn-outline">
+        <Link href={backHref} className="btn-outline">
           {editing ? "Back to courses" : "Cancel"}
         </Link>
       </div>

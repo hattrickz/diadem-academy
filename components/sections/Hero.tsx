@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { MapPin, MessageCircle, ArrowRight } from "lucide-react";
-import { siteConfig, whatsappHref, mapsHref } from "@/lib/site-config";
+import { ArrowRight } from "lucide-react";
+import { siteConfig, } from "@/lib/site-config";
 
 export default function Hero() {
   return (
@@ -17,27 +17,16 @@ export default function Hero() {
         >
           <span className="eyebrow text-skyblue-300">Physical Academy &middot; Fadeyi, Lagos</span>
           <h1 className="mt-4 text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.08] text-white">
-            Quietly Brilliant Guidance for{" "}
-            <span className="text-skyblue-300">JAMB, WAEC &amp; Admission</span> Success
-          </h1>
-          <p className="mt-6 max-w-xl text-base md:text-lg text-navy-100/85 leading-relaxed">
-            Diadem Consult Academy is a real, in-person academy where students
-            prepare for JAMB, WAEC, NECO and GCE, and get expert guidance on
-            Post-UTME forms and university admission &mdash; taught face to
-            face by experienced tutors.
-          </p>
+  Training Leaders of{" "}
+  <span className="text-skyblue-300">Tomorrow.</span>
+</h1>
+         <p className="mt-6 max-w-xl text-base md:text-lg text-navy-100/85 leading-relaxed">
+  Build a stronger academic future and gain practical digital skills
+  with Diadem Consult Academy. Prepare for JAMB, WAEC, NECO and GCE,
+  receive admission guidance, and explore technology courses designed
+  to help you develop skills for the digital world.
+</p>
 
-          <div className="mt-9 flex flex-col sm:flex-row gap-4">
-            <a
-              href={whatsappHref("Hello Diadem Consult Academy, I'd like to enquire about your programs.")}
-              className="btn-whatsapp"
-            >
-              <MessageCircle size={18} /> Chat With Us on WhatsApp
-            </a>
-            <a href={mapsHref()} target="_blank" rel="noopener noreferrer" className="btn-outline !border-white !text-white hover:!bg-white hover:!text-navy-800">
-              <MapPin size={18} /> Get Directions
-            </a>
-          </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-navy-100/80">
             <span>{siteConfig.hours.days}</span>

@@ -14,6 +14,7 @@ export interface DashboardStats {
   published: number;
   drafts: number;
   students: number;
+  enrollments: number;
   recentCourses: Pick<Course, "id" | "title" | "published" | "updated_at">[];
 }
 
@@ -21,11 +22,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = createClient();
   const head = { count: "exact", head: true } as const;
 
-  const [total, published, drafts, students, recent] = await Promise.all([
+  const [total, published, drafts, students, enrollments, recent] = await Promise.all([
     supabase.from("courses").select("id", head),
     supabase.from("courses").select("id", head).eq("published", true),
     supabase.from("courses").select("id", head).eq("published", false),
     supabase.from("profiles").select("id", head).eq("role", "student"),
+    supabase.from("enrollments").select("id", head),
     supabase
       .from("courses")
       .select("id, title, published, updated_at")
@@ -33,7 +35,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .limit(5),
   ]);
 
-  for (const result of [total, published, drafts, students, recent]) {
+  for (const result of [total, published, drafts, students, enrollments, recent]) {
     if (result.error) throw new Error("Could not load dashboard statistics.");
   }
 
@@ -42,6 +44,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     published: published.count ?? 0,
     drafts: drafts.count ?? 0,
     students: students.count ?? 0,
+    enrollments: enrollments.count ?? 0,
     recentCourses: recent.data ?? [],
   };
 }
